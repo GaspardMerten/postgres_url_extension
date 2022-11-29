@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test.sql" type="DatabaseScript" nameIsGenerated="true">
+    <script-file value="$PROJECT_DIR$/test.sql" />
+    <script-mode>FILE</script-mode>
+    <data-source id="f0ed6e90-63d6-4bf0-881f-023741a3ddbf" namespace="database/&quot;test&quot;/schema/&quot;public&quot;" />
+    <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Update extension" />
+    </method>
+  </configuration>
+</component>
