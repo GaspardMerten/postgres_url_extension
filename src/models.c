@@ -165,30 +165,29 @@ URL fromStringWithContext(URL context, const char *source) {
 
     return url;
 }
-
-URL fromProtocolHostFile(const char *protocol,const char *host,const char *file) {
-    char new_scheme[10] = "";
-    char new_host[1024] = "";
-    char new_path[2048] = "";
-    strcpy(new_scheme, protocol);
-    strcpy(new_host, host);
-    strcpy(new_path,file);
-
-    URL url= {new_scheme, new_host, new_path, "", ""};
-
-    return url;
-}
-
 URL fromProtocolHostPortFile(const char *protocol,const char *host, const int *port, const char *file) {
     char new_scheme[10] = "";
     char new_host[1024] = "";
     char new_path[2048] = "";
 
     strcpy(new_scheme, protocol);
-    sprintf(new_host, "%s:%d",host ,*port);
+    if (*port == -1 ){
+        strcpy(new_host,host);
+    }
+    else{sprintf(new_host, "%s:%d",host ,*port);}
+
     strcpy(new_path,file);
 
     URL url= {new_scheme, new_host, new_path, "", ""};
 
     return url;
 }
+
+URL fromProtocolHostFile(const char *protocol,const char *host,const char *file) {
+    int *port;
+    *port = -1;
+    URL url= fromProtocolHostPortFile(protocol, host, port, file);
+
+    return url;
+}
+
