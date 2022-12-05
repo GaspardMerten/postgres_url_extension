@@ -23,3 +23,45 @@ CREATE FUNCTION getAuthority(url) RETURNS text
     STRICT
     LANGUAGE C
     AS '$libdir/url';
+
+CREATE FUNCTION getDefaultPort(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
+
+CREATE FUNCTION getFile(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
+
+CREATE FUNCTION getHost(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
+
+CREATE FUNCTION getPath(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
+
+CREATE FUNCTION getPort(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
+
+CREATE FUNCTION getProtocol(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
+
+CREATE FUNCTION getQuery(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';

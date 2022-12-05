@@ -6,5 +6,5 @@ set(CMAKE_C_STANDARD 99)
 add_executable(dbms_extension url.c src/models.c)
 
 INCLUDE_DIRECTORIES(
-        "/usr/local/pgsql/include/server "
+        "/Applications/Postgres.app/Contents/Versions/15/include/postgresql/server "
 )

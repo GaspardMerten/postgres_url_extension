@@ -1,7 +1,6 @@
 #include <string.h>
 #include <postgres.h>
 
-
 typedef struct URL {
     char *scheme;
     char *host;
@@ -61,4 +60,38 @@ URL fromString(const char *source) {
     elog(DEBUG1, fragment);
 
     return url;
+}
+
+char* defaultPort(URL url){
+    char* scheme = url.scheme;
+
+    // converting to lowercase first
+
+    if(strcmp(scheme, "http://") == 0){
+        return "80";
+    }
+    else if(strcmp(scheme, "https://") == 0){
+        return "443";
+    }
+    else if(strcmp(scheme, "smtp://") == 0){
+        return "25";
+    }
+    else if(strcmp(scheme, "ftp://") == 0){
+        return "21";
+    }
+    else if(strcmp(scheme, "ssh://") == 0){
+        return "22";
+    }
+    else if(strcmp(scheme, "telnet://") == 0){
+        return "23";
+    }
+    else if(strcmp(scheme, "dns://") == 0){
+        return "53";
+    }
+
+    else {
+        return "Port not found";
+    }
+
+
 }
