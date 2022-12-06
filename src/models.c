@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <postgres.h>
+#include <postgresql/libpq-fe.h>
 
 
 typedef struct URL {
@@ -165,18 +166,38 @@ URL fromStringWithContext(URL context, const char *source) {
 
     return url;
 }
+
+
 URL fromProtocolHostPortFile(const char *protocol,const char *host, const int *port, const char *file) {
     char new_scheme[10] = "";
     char new_host[1024] = "";
     char new_path[2048] = "";
+    PGconn *conn;
+    PGresult        *res;
+    int             rec_count;
+    int             row;
+    int             col;
+    conn = PQconnectdb("dbname=ljdata host=localhost user=dataman password=supersecret");
 
-    strcpy(new_scheme, protocol);
-    if (*port == -1 ){
-        strcpy(new_host,host);
+    char request[100];
+    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %d)", protocol);
+    res= PQexec(conn, request);
+
+    if(PQntuples(res) > 0){
+        strcpy(new_scheme, protocol);
+        if (*port == -1 ){
+            strcpy(new_host,host);
+        }
+        else{sprintf(new_host, "%s:%d",host ,*port);}
+
+        strcpy(new_path,file);
     }
-    else{sprintf(new_host, "%s:%d",host ,*port);}
+    else
+    {
+        //Username doesn't exist.
+    }
 
-    strcpy(new_path,file);
+
 
     URL url= {new_scheme, new_host, new_path, "", ""};
 
@@ -184,8 +205,9 @@ URL fromProtocolHostPortFile(const char *protocol,const char *host, const int *p
 }
 
 URL fromProtocolHostFile(const char *protocol,const char *host,const char *file) {
-    int *port;
+    int *port = NULL;
     *port = -1;
+
     URL url= fromProtocolHostPortFile(protocol, host, port, file);
 
     return url;
