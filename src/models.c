@@ -108,6 +108,17 @@ URL *urlFromString(const char *source) {
         source++;
     }
 
+
+    if (pointerSize[2] == 0) { // no host part -> invalid url
+        ereport(ERROR,
+                (
+                        errmsg("Invalid url format."),
+                                errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
+                                errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
+                )
+        );
+    }
+
     int32 schemeStructSize = VARHDRSZ + charInSource + sizeof(u_int8_t) * lengthof(pointerSize);
     URL *url = (URL *) palloc(schemeStructSize);
     SET_VARSIZE(url, schemeStructSize);

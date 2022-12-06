@@ -20,7 +20,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8f6ac3a7-cd40-49e5-97da-6e9cc95ea835" name="Changes" comment="" />
+    <list default="true" id="8f6ac3a7-cd40-49e5-97da-6e9cc95ea835" name="Changes" comment="Removing malloc in profit of cstring_to_text_with_len">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/models.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.sql" beforeDir="false" afterPath="$PROJECT_DIR$/test.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/url.c" beforeDir="false" afterPath="$PROJECT_DIR$/url.c" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -55,6 +62,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "WebServerToolWindowFactoryState": "false",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
@@ -122,8 +130,16 @@
       <workItem from="1669755700893" duration="5219000" />
       <workItem from="1669921770827" duration="725000" />
       <workItem from="1670068280373" duration="857000" />
-      <workItem from="1670277173305" duration="8883000" />
+      <workItem from="1670277173305" duration="9927000" />
     </task>
+    <task id="LOCAL-00001" summary="Removing malloc in profit of cstring_to_text_with_len">
+      <created>1670286715949</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1670286715949</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -139,5 +155,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Removing malloc in profit of cstring_to_text_with_len" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removing malloc in profit of cstring_to_text_with_len" />
   </component>
 </project>

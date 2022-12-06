@@ -10,6 +10,7 @@ PG_MODULE_MAGIC;
 PG_FUNCTION_INFO_V1(url_in);
 
 Datum url_in(PG_FUNCTION_ARGS) {
+
     char const *s = PG_GETARG_CSTRING(0);
     URL *url = urlFromString(s);
     PG_RETURN_URL(url);
