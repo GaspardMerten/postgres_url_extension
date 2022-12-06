@@ -1,11 +1,13 @@
 DROP table if exists table_with_url;
 DROP extension if exists url;
 
+
 CREATE extension url;
 CREATE TABLE table_with_url
 (
     my_url url
 );
+
 
 INSERT INTO table_with_url
 VALUES ('https://gaspardmertenpremierdunometavecuntreslongnom@www.norse.be.super:4242/doc/?x#4'),
@@ -19,5 +21,8 @@ SELECT getscheme(my_url),
        getport(my_url),
        getpath(my_url),
        getquery(my_url),
-       getref(my_url)
-FROM table_with_url;
+       getref(my_url) FROM table_with_url;
+
+EXPLAIN ANALYSE SELECT getauthority(my_url) from table_with_url;
+EXPLAIN ANALYSE SELECT url1.my_url, twu.my_url
+from table_with_url as url1 inner join table_with_url twu on url1.my_url >= twu.my_url;

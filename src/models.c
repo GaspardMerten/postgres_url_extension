@@ -7,17 +7,16 @@
 typedef struct URL {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-    int32_t length; /// DO NOT REMOVE, used internally
+    uint32 length; /// DO NOT REMOVE, used internally
 #pragma clang diagnostic pop
-
-    u_int8_t scheme;
-    u_int8_t host;
-    u_int8_t path;
-    u_int8_t query;
-    u_int8_t user;
-    u_int8_t port;
-    u_int8_t fragment;
-    char url[FLEXIBLE_ARRAY_MEMBER];
+    int8 scheme;
+    int8 host;
+    int8 path;
+    int8 query;
+    int8 user;
+    int8 port;
+    int8 fragment;
+    char url[];
 } URL;
 
 Datum mallocAndMakeSlice(const char *start, int length) {
@@ -27,6 +26,8 @@ Datum mallocAndMakeSlice(const char *start, int length) {
 Datum getHostFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user, url->host);
 }
+
+
 
 Datum getSchemeFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url, url->scheme);
@@ -39,6 +40,16 @@ Datum getPortFromUrl(const URL *url) {
     }
     return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + delta,
                               url->port - delta); // +delta (and thus -delta for length) removes the ":"
+}
+
+char* getUrl(const URL *url) {
+    int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
+
+    char* urlString = malloc((totalLength+1)*sizeof(char));
+    strncpy(urlString, url->url, totalLength);
+    *(urlString+totalLength) = '\0';
+
+    return urlString;
 }
 
 Datum getRefFromUrl(const URL *url) {
@@ -55,7 +66,6 @@ Datum getPathFromUrl(const URL *url) {
 }
 
 Datum getUsernameFromUrl(const URL *url) {
-    char int_str[20];
     int delta = 0;
     if (url->user > 0) {
         delta = url->user - 1; // prevent inclusion of @
@@ -64,7 +74,7 @@ Datum getUsernameFromUrl(const URL *url) {
 }
 
 URL *urlFromString(const char *source) {
-    u_int8_t pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
+    int8 pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
 
     int currentPointer = 0;
 
@@ -119,10 +129,11 @@ URL *urlFromString(const char *source) {
         );
     }
 
-    int32 schemeStructSize = VARHDRSZ + charInSource + sizeof(u_int8_t) * lengthof(pointerSize);
+    int32 schemeStructSize = sizeof(URL)+sizeof(char)*charInSource-1;
     URL *url = (URL *) palloc(schemeStructSize);
-    SET_VARSIZE(url, schemeStructSize);
+    url->length = ((uint32) schemeStructSize << 2);
     memcpy(url->url, sourceStart, charInSource);
+
     url->scheme = pointerSize[0];
     url->user = pointerSize[1];
     url->host = pointerSize[2];
