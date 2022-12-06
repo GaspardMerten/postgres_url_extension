@@ -21,11 +21,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8f6ac3a7-cd40-49e5-97da-6e9cc95ea835" name="Changes" comment="Removing malloc in profit of cstring_to_text_with_len">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/a03c64a6-6b98-4710-b3f0-420af1ef6c76/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/test_sql.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/models.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/models.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.sql" beforeDir="false" afterPath="$PROJECT_DIR$/test.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/url.c" beforeDir="false" afterPath="$PROJECT_DIR$/url.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -37,11 +40,16 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug-WSL" />
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="main" />
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file:////wsl$/Ubuntu/usr/local/pgsql/include/server/utils/builtins.h" root0="SKIP_INSPECTION" />
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -57,35 +65,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "last_opened_file_path": "C:/Users/gaspa/Documents/Dev/ULB/dbms_extension",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "vcs.Subversion",
-    "structure.view.defaults.are.configured": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/gaspa/Documents/Dev/ULB/dbms_extension&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Subversion&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
     ],
-    "RunConfigurationTargetLRU": [
-      "f0ed6e90-63d6-4bf0-881f-023741a3ddbf/database/\"test\"/schema/\"public\"",
-      "a03c64a6-6b98-4710-b3f0-420af1ef6c76/database/\"postgres\""
+    &quot;RunConfigurationTargetLRU&quot;: [
+      &quot;f0ed6e90-63d6-4bf0-881f-023741a3ddbf/database/\&quot;test\&quot;/schema/\&quot;public\&quot;&quot;,
+      &quot;a03c64a6-6b98-4710-b3f0-420af1ef6c76/database/\&quot;postgres\&quot;&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Database Script.test.sql">
     <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
@@ -131,6 +139,7 @@
       <workItem from="1669921770827" duration="725000" />
       <workItem from="1670068280373" duration="857000" />
       <workItem from="1670277173305" duration="9927000" />
+      <workItem from="1670324095881" duration="8566000" />
     </task>
     <task id="LOCAL-00001" summary="Removing malloc in profit of cstring_to_text_with_len">
       <created>1670286715949</created>
