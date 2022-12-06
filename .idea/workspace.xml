@@ -64,7 +64,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "reference.settings.ide.settings.new.ui",
+    "settings.editor.selected.configurable": "vcs.Subversion",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   },
@@ -108,6 +108,9 @@
     </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration">
+    <configuration>C:\Users\gaspa\AppData\Roaming\Subversion</configuration>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="8f6ac3a7-cd40-49e5-97da-6e9cc95ea835" name="Changes" comment="" />
@@ -119,7 +122,7 @@
       <workItem from="1669755700893" duration="5219000" />
       <workItem from="1669921770827" duration="725000" />
       <workItem from="1670068280373" duration="857000" />
-      <workItem from="1670277173305" duration="8464000" />
+      <workItem from="1670277173305" duration="8883000" />
     </task>
     <servers />
   </component>

@@ -1,12 +1,14 @@
 #include <string.h>
 #include <postgres.h>
+#include <fmgr.h>
+#include <utils/builtins.h>
 
 
 typedef struct URL {
-    #pragma clang diagnostic push
-    #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     int32_t length; /// DO NOT REMOVE, used internally
-    #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 
     u_int8_t scheme;
     u_int8_t host;
@@ -18,64 +20,46 @@ typedef struct URL {
     char url[FLEXIBLE_ARRAY_MEMBER];
 } URL;
 
-char *mallocAndMakeSlice(const char *start, int length) {
-    char *out = malloc(length + 1);
-    if (length == 0) {
-        *out = '\0';
-    } else {
-        strncpy(out, start, length);
-        *(out + length) = '\0';
-    }
-    return out;
+Datum mallocAndMakeSlice(const char *start, int length) {
+    PG_RETURN_TEXT_P(cstring_to_text_with_len(start, length));
 }
 
-char *getHostFromUrl(const URL *url) {
+Datum getHostFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user, url->host);
 }
 
-char *getSchemeFromUrl(const URL *url) {
+Datum getSchemeFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url, url->scheme);
 }
 
-char *getPortFromUrl(const URL *url) {
+Datum getPortFromUrl(const URL *url) {
     int delta = 0;
     if (url->port > 0) {
         delta = 1;
     }
-    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host+delta, url->port-delta); // +delta (and thus -delta for length) removes the ":"
+    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + delta,
+                              url->port - delta); // +delta (and thus -delta for length) removes the ":"
 }
 
-char *getRefFromUrl(const URL *url) {
+Datum getRefFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port + url->path + url->query,
                               url->fragment);
 }
 
-char *getQueryFromUrl(const URL *url) {
+Datum getQueryFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port + url->path, url->query);
 }
 
-char *getPathFromUrl(const URL *url) {
+Datum getPathFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port, url->path);
 }
 
-char *getUsernameFromUrl(const URL *url) {
-    elog(DEBUG1, url->url);
+Datum getUsernameFromUrl(const URL *url) {
     char int_str[20];
-
-    sprintf(int_str, "%d", url->user);
-
-    elog(DEBUG1, "Hello world");
-    elog(DEBUG1,  int_str);
-    sprintf(int_str, "%d", url->scheme);
-    elog(DEBUG1,  int_str);
-
-
     int delta = 0;
     if (url->user > 0) {
         delta = url->user - 1; // prevent inclusion of @
     }
-    sprintf(int_str, "%d", delta);
-    elog(DEBUG1,  int_str);
     return mallocAndMakeSlice(url->url + url->scheme, delta);
 }
 

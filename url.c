@@ -23,59 +23,51 @@ Datum url_out(PG_FUNCTION_ARGS) {
     PG_RETURN_CSTRING(url->url);
 }
 
-
 PG_FUNCTION_INFO_V1(getauthority);
 Datum
 getauthority(PG_FUNCTION_ARGS) {
     URL const *url = (URL *) PG_GETARG_POINTER(0);
-    char const *string = getHostFromUrl(url);
-    elog(DEBUG1, string);
-    PG_RETURN_CSTRING(cstring_to_text(string));
+    return getHostFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getusername);
 Datum
 getusername(PG_FUNCTION_ARGS) {
     URL const *url = (URL *) PG_GETARG_POINTER(0);
-    char const *string = getUsernameFromUrl(url);
-    PG_RETURN_CSTRING(cstring_to_text(string));
+   return getUsernameFromUrl(url);
+
 }
 PG_FUNCTION_INFO_V1(getscheme);
 Datum
 getscheme(PG_FUNCTION_ARGS) {
     URL const *url = (URL *) PG_GETARG_POINTER(0);
-    char const *string = getSchemeFromUrl(url);
-    PG_RETURN_TEXT_P(cstring_to_text(string));
+    return getSchemeFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getquery);
 Datum
 getquery(PG_FUNCTION_ARGS) {
     URL const *url = (URL *) PG_GETARG_POINTER(0);
-    char const *string = getQueryFromUrl(url);
-    PG_RETURN_TEXT_P(cstring_to_text(string));
+   return getQueryFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getref);
 Datum
 getref(PG_FUNCTION_ARGS) {
     URL const *url = (URL *) PG_GETARG_POINTER(0);
-    char const *string = getRefFromUrl(url);
-    PG_RETURN_TEXT_P(cstring_to_text(string));
+    return getRefFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getport);
 Datum
 getport(PG_FUNCTION_ARGS) {
     URL const *url = (URL *) PG_GETARG_POINTER(0);
-    char const *string = getPortFromUrl(url);
-    PG_RETURN_TEXT_P(cstring_to_text(string));
+    return getPortFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getpath);
 Datum
 getpath(PG_FUNCTION_ARGS) {
     URL const *url = (URL *) PG_GETARG_POINTER(0);
-    char const *string = getPathFromUrl(url);
-    PG_RETURN_TEXT_P(cstring_to_text(string));
+    return getPathFromUrl(url);
 }
