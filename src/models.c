@@ -21,6 +21,14 @@ typedef struct URL {
     char url[FLEXIBLE_ARRAY_MEMBER];
 } URL;
 
+struct protocol_handler{
+    const char *protocol1;
+    const char *protocol2;
+    const char *protocol3;
+    const char *protocol4;
+} list = {"http","https","file","file"};
+
+
 Datum mallocAndMakeSlice(const char *start, int length) {
     PG_RETURN_TEXT_P(cstring_to_text_with_len(start, length));
 }
@@ -109,17 +117,15 @@ URL *urlFromString(const char *source) {
         source++;
     }
 
-
     if (pointerSize[2] == 0) { // no host part -> invalid url
         ereport(ERROR,
                 (
                         errmsg("Invalid url format."),
-                                errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
-                                errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
+                        errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
+                        errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
                 )
         );
     }
-
     int32 schemeStructSize = VARHDRSZ + charInSource + sizeof(u_int8_t) * lengthof(pointerSize);
     URL *url = (URL *) palloc(schemeStructSize);
     SET_VARSIZE(url, schemeStructSize);
@@ -240,34 +246,55 @@ URL *fromProtocolHostPortFile(const char *protocol,const char *host, const int *
     char new_scheme[10] = "";
     char new_host[1024] = "";
     char new_path[2048] = "";
-//    PGconn *conn;
-//    PGresult        *res;
-//    conn = PQconnectdb("dbname=ljdata host=localhost user=dataman password=supersecret");
-//
-//    char request[100];
-//    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %s)", protocol);
-//    res= PQexec(conn, request);
-//
-//    if(PQntuples(res) > 0){
-//        strcpy(new_scheme, protocol);
-//        if (*port == -1 ){
-//            strcpy(new_host,host);
-//        }
-//        else{sprintf(new_host, "%s:%d",host ,*port);}
-//
-//        strcpy(new_path,file);
-//    }
-//    else
-//    {
-//        //Username doesn't exist.
-//    }
-    strcpy(new_scheme, protocol);
-    if (*port == -1 ){
-        strcpy(new_host,host);
-    }
-    else{sprintf(new_host, "%s:%d",host ,*port);}
+    PGconn *conn;
+    PGresult        *res;
+    // check the database if the protocol exist
+    conn = PQconnectdb("dbname=test host=localhost user=postgres password=postgres");
+    char request[100];
+    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %s)", protocol);
+    res= PQexec(conn, request);
 
-    strcpy(new_path,file);
+    if(PQntuples(res) > 0){
+        strcpy(new_scheme, protocol);
+        if (*port == -1 ){
+            strcpy(new_host,host);
+        }
+        else{sprintf(new_host, "%s:%d",host ,*port);}
+
+        strcpy(new_path,file);
+    }
+    else
+    {
+        int already_exist= 0;
+        if (protocol == list.protocol1 ||protocol == list.protocol2 ||
+        protocol == list.protocol3 ||protocol == list.protocol4){
+            already_exist= 1;
+        }
+        if (already_exist){
+          strcpy(new_scheme, protocol);
+            if (*port == -1 ){
+                strcpy(new_host,host);
+            }
+            else{sprintf(new_host, "%s:%d",host ,*port);}
+
+            strcpy(new_path,file);
+        } else {
+            ereport(ERROR,
+                    (
+                            errmsg("Invalid protocol format."),
+                            errdetail("The '%s' protocol isn't allowed", protocol),
+                            errhint("Make sure you are entering a protocol like: http, https, file, and jar.")
+                    )
+                    );
+        }
+    }
+//    strcpy(new_scheme, protocol);
+//    if (*port == -1 ){
+//        strcpy(new_host,host);
+//    }
+//    else{sprintf(new_host, "%s:%d",host ,*port);}
+//
+//    strcpy(new_path,file);
 
     int32 schemeStructSize =lengthof(new_scheme) + lengthof(new_host) +lengthof(new_path)  ;
     URL *url = (URL *) palloc(schemeStructSize);
