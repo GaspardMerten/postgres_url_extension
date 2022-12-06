@@ -15,88 +15,47 @@ LANGUAGE C IMMUTABLE STRICT;
 CREATE TYPE url (
   INPUT          = url_in,
   OUTPUT         = url_out,
-  INTERNALLENGTH = -1
+  INTERNALLENGTH = VARIABLE
 );
 
 CREATE FUNCTION getAuthority(url) RETURNS text
     IMMUTABLE
     STRICT
     LANGUAGE C
-    AS '$libdir/url';
+AS '$libdir/url';
 
--- ********************* OPERATOR AND INDEX *************************************
-CREATE OPERATOR = (
-	LEFTARG = url,
-	RIGHTARG = url,
-	PROCEDURE = url_eq,
-	COMMUTATOR = '=',
-	NEGATOR = '<>',
-	RESTRICT = eqsel,
-	JOIN = eqjoinsel
-);
-COMMENT ON OPERATOR =(url, url) IS 'equals?';
+CREATE FUNCTION getUsername(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
 
-CREATE OPERATOR <> (
-	LEFTARG = url,
-	RIGHTARG = url,
-	PROCEDURE = url_ne,
-	COMMUTATOR = '<>',
-	NEGATOR = '=',
-	RESTRICT = neqsel,
-	JOIN = neqjoinsel
-);
-COMMENT ON OPERATOR <>(url, url) IS 'not equals?';
+CREATE FUNCTION getPath(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
 
-CREATE OPERATOR < (
-	LEFTARG = url,
-	RIGHTARG = url,
-	PROCEDURE = url_lt,
-	COMMUTATOR = > , 
-	NEGATOR = >= ,
-   	RESTRICT = scalarltsel, 
-	JOIN = scalarltjoinsel
-);
-COMMENT ON OPERATOR <(url, url) IS 'less-than';
+CREATE FUNCTION getRef(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
 
-CREATE OPERATOR <= (
-	LEFTARG = url,
-	RIGHTARG = url,
-	PROCEDURE = url_le,
-	COMMUTATOR = >= , 
-	NEGATOR = > ,
-   	RESTRICT = scalarltsel, 
-	JOIN = scalarltjoinsel
-);
-COMMENT ON OPERATOR <=(url, url) IS 'less-than-or-equal';
+CREATE FUNCTION getPort(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
 
-CREATE OPERATOR > (
-	LEFTARG = url,
-	RIGHTARG = url,
-	PROCEDURE = url_gt,
-	COMMUTATOR = < , 
-	NEGATOR = <= ,
-   	RESTRICT = scalargtsel, 
-	JOIN = scalargtjoinsel
-);
-COMMENT ON OPERATOR >(url, url) IS 'greater-than';
+CREATE FUNCTION getQuery(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
 
-CREATE OPERATOR >= (
-	LEFTARG = url,
-	RIGHTARG = url,
-	PROCEDURE = url_ge,
-	COMMUTATOR = <= , 
-	NEGATOR = < ,
-   	RESTRICT = scalargtsel, 
-	JOIN = scalargtjoinsel
-);
-COMMENT ON OPERATOR >=(url, url) IS 'greater-than-or-equal';
-
-CREATE OPERATOR CLASS btree_url_ops
-DEFAULT FOR TYPE url USING btree
-AS
-        OPERATOR        1       <  ,
-        OPERATOR        2       <= ,
-        OPERATOR        3       =  ,
-        OPERATOR        4       >= ,
-        OPERATOR        5       >  ,
-        FUNCTION        1       url_cmp(url, url);
+CREATE FUNCTION getScheme(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS '$libdir/url';
