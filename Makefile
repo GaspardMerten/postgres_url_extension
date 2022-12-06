@@ -6,5 +6,5 @@ REGRESS   = url_test         # our test script file (without extension)
 MODULES   = url              # our c module file to build
 
 # Postgres build stuff
-PGXS := $(shell /usr/local/pgsql/bin/pg_config --pgxs)
+PGXS := $(shell /usr/lib/postgresql/12/bin/pg_config --pgxs)
 include $(PGXS)

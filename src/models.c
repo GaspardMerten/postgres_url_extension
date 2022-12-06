@@ -14,7 +14,7 @@ typedef struct URL {
 
 
 URL fromString(const char *source) {
-    elog(DEBUG1, source);
+//    elog(DEBUG1, source);
     char scheme[10] = "";
     char host[1024] = "";
     char path[2048] = "";
@@ -44,7 +44,7 @@ URL fromString(const char *source) {
 
         cToStr[0] = *source;
         strcat(pointers[currentPointer], cToStr);
-        elog(DEBUG1, cToStr);
+//        elog(DEBUG1, cToStr);
 
         if (currentPointer == 0 && lastChar == '/' && *source == '/') {
             currentPointer = 1;
@@ -57,17 +57,17 @@ URL fromString(const char *source) {
 
     URL url = {scheme, host, path, query, fragment};
 
-    elog(DEBUG1, scheme);
-    elog(DEBUG1, host);
-    elog(DEBUG1, path);
-    elog(DEBUG1, query);
-    elog(DEBUG1, fragment);
+//    elog(DEBUG1, scheme);
+//    elog(DEBUG1, host);
+//    elog(DEBUG1, path);
+//    elog(DEBUG1, query);
+//    elog(DEBUG1, fragment);
 
     return url;
 }
 
 URL fromStringWithContext(URL context, const char *source) {
-    elog(DEBUG1, source);
+//    elog(DEBUG1, source);
     char scheme[10] = "";
     char host[1024] = "";
     char path[2048] = "";
@@ -102,7 +102,7 @@ URL fromStringWithContext(URL context, const char *source) {
 
         cToStr[0] = *source;
         strcat(pointers[currentPointer], cToStr);
-        elog(DEBUG1, cToStr);
+//        elog(DEBUG1, cToStr);
 
         if (currentPointer == 0 && lastChar == '/' && *source == '/') {
             currentPointer = 1;
@@ -158,11 +158,11 @@ URL fromStringWithContext(URL context, const char *source) {
 
     URL url = {new_scheme, new_host, new_path, new_query, new_fragment};
 
-    elog(DEBUG1, new_scheme);
-    elog(DEBUG1, new_host);
-    elog(DEBUG1, new_path);
-    elog(DEBUG1, new_query);
-    elog(DEBUG1, new_fragment);
+//    elog(DEBUG1, new_scheme);
+//    elog(DEBUG1, new_host);
+//    elog(DEBUG1, new_path);
+//    elog(DEBUG1, new_query);
+//    elog(DEBUG1, new_fragment);
 
     return url;
 }
@@ -174,13 +174,10 @@ URL fromProtocolHostPortFile(const char *protocol,const char *host, const int *p
     char new_path[2048] = "";
     PGconn *conn;
     PGresult        *res;
-    int             rec_count;
-    int             row;
-    int             col;
     conn = PQconnectdb("dbname=ljdata host=localhost user=dataman password=supersecret");
 
     char request[100];
-    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %d)", protocol);
+    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %s)", protocol);
     res= PQexec(conn, request);
 
     if(PQntuples(res) > 0){
