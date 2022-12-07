@@ -110,7 +110,7 @@ getport(PG_FUNCTION_ARGS)
     int portSign = ':';
     ptr = strchr(host, portSign);
     if(ptr == NULL){
-        // no port given, returns default port for host
+        // no port given, returns nothing
         PG_RETURN_CSTRING(cstring_to_text("No port in URL"));
 
     }
