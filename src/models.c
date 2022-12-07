@@ -1,97 +1,168 @@
 #include <string.h>
 #include <postgres.h>
+#include <fmgr.h>
+#include <utils/builtins.h>
+
 
 typedef struct URL {
-    char *scheme;
-    char *host;
-    char *path;
-    char *query;
-    char *fragment;
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    uint32 length; /// DO NOT REMOVE, used internally
+#pragma clang diagnostic pop
+    int8 scheme;
+    int8 host;
+    int8 path;
+    int8 query;
+    int8 user;
+    int8 port;
+    int8 fragment;
+    char url[];
 } URL;
 
-URL fromString(const char *source) {
-    elog(DEBUG1, source);
-    char scheme[10] = "";
-    char host[1024] = "";
-    char path[2048] = "";
-    char query[2048] = "";
-    char fragment[256] = "";
+Datum mallocAndMakeSlice(const char *start, int length) {
+    PG_RETURN_TEXT_P(cstring_to_text_with_len(start, length));
 
-    char *pointers[] = {scheme, host, path, query, fragment};
+}
+
+Datum mallocAndMakeSliceToInt(const char *start, int length){
+    char *str = NULL;
+    str[0] = start;
+    str[length+1] = '\0';
+
+    PG_RETURN_INT64(atoi((const char *) str));
+}
+
+Datum getHostFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url + url->scheme + url->user, url->host);
+}
+
+
+Datum getSchemeFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url, url->scheme);
+}
+
+Datum getAuthorityFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url + url->scheme + url->user, url->host + url->port);
+}
+Datum getPortFromUrl(const URL *url) {
+    int delta = 0;
+    if (url->port > 0) {
+        delta = 1;
+    }
+    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + delta,
+                              url->port - delta); // +delta (and thus -delta for length) removes the ":"
+}
+
+char *getUrl(const URL *url) {
+    int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
+
+    char *urlString = malloc((totalLength + 1) * sizeof(char));
+    strncpy(urlString, url->url, totalLength);
+    *(urlString + totalLength) = '\0';
+
+    return urlString;
+}
+
+Datum getRefFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port + url->path + url->query,
+                              url->fragment);
+}
+
+Datum getQueryFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port + url->path, url->query);
+}
+
+Datum getPathFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port, url->path);
+}
+
+Datum getProtocolFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url, url->scheme - 3); // -3 to delete the ://
+}
+
+Datum getFileFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port, url->path + url->query);
+}
+
+Datum getUsernameFromUrl(const URL *url) {
+    int delta = 0;
+    if (url->user > 0) {
+        delta = url->user - 1; // prevent inclusion of @
+    }
+    return mallocAndMakeSlice(url->url + url->scheme, delta);
+}
+
+URL *urlFromString(const char *source) {
+    int8 pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
 
     int currentPointer = 0;
 
-    char lastChar = '0';
-    char cToStr[2];
-    cToStr[1] = '\0';
+    char lastChar = '\0';
 
-    while ( *source ) {
-        if (currentPointer == 1 && *source == '/') {
-            currentPointer = 2;
-        }
+    int charInSource = 0;
 
-        if ((currentPointer == 1 || currentPointer == 2) && *source == '?') {
+    const char *sourceStart = source;
+
+    while (*source) {
+
+        if (currentPointer == 2 && *source == ':') {
             currentPointer = 3;
         }
 
-        if ((currentPointer == 1 || currentPointer == 2 || currentPointer == 3) && *source == '#') {
+        if ((currentPointer == 2 || currentPointer == 3) && *source == '/') {
             currentPointer = 4;
         }
+        if ((currentPointer == 2 || currentPointer == 3 || currentPointer == 4) && *source == '?') {
+            currentPointer = 5;
+        }
+        if ((currentPointer == 2 || currentPointer == 3 || currentPointer == 4 || currentPointer == 5) &&
+            *source == '#') {
+            currentPointer = 6;
+        }
 
-        cToStr[0] = *source;
-        strcat(pointers[currentPointer], cToStr);
-        elog(DEBUG1, cToStr);
+        pointerSize[currentPointer]++;
+
+        if (*source == '@') {
+            pointerSize[1] = pointerSize[2];
+            pointerSize[2] = 0;
+            currentPointer = 2;
+        }
 
         if (currentPointer == 0 && lastChar == '/' && *source == '/') {
-            currentPointer = 1;
+            currentPointer = 2;
         }
 
         lastChar = *source;
-
+        charInSource++;
         source++;
     }
 
-    URL url = {scheme, host, path, query, fragment};
 
-    elog(DEBUG1, scheme);
-    elog(DEBUG1, host);
-    elog(DEBUG1, path);
-    elog(DEBUG1, query);
-    elog(DEBUG1, fragment);
+    if (pointerSize[2] == 0) { // no host part -> invalid url
+        ereport(ERROR,
+                (
+                        errmsg("Invalid url format."),
+                                errdetail(
+                                        "The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)",
+                                        sourceStart),
+                                errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
+                )
+        );
+    }
+
+    int32 schemeStructSize = sizeof(URL) + sizeof(char) * charInSource;
+    URL *url = (URL *) palloc(schemeStructSize);
+    url->length = ((uint32) schemeStructSize << 2);
+    memcpy(url->url, sourceStart, charInSource+1);
+    char const* endSymbol = "\0";
+    strcat(url->url, endSymbol);
+    url->scheme = pointerSize[0];
+    url->user = pointerSize[1];
+    url->host = pointerSize[2];
+    url->port = pointerSize[3];
+    url->path = pointerSize[4];
+    url->query = pointerSize[5];
+    url->fragment = pointerSize[6];
 
     return url;
-}
-
-char* defaultPort(URL url){
-    char* scheme = url.scheme;
-
-    // converting to lowercase first
-
-    if(strcmp(scheme, "http://") == 0){
-        return "80";
-    }
-    else if(strcmp(scheme, "https://") == 0){
-        return "443";
-    }
-    else if(strcmp(scheme, "smtp://") == 0){
-        return "25";
-    }
-    else if(strcmp(scheme, "ftp://") == 0){
-        return "21";
-    }
-    else if(strcmp(scheme, "ssh://") == 0){
-        return "22";
-    }
-    else if(strcmp(scheme, "telnet://") == 0){
-        return "23";
-    }
-    else if(strcmp(scheme, "dns://") == 0){
-        return "53";
-    }
-
-    else {
-        return "Port not found";
-    }
-
-
 }

@@ -1,158 +1,167 @@
 #include "postgres.h"
 #include "fmgr.h"
-#include <stdio.h>
-#include <string.h>
-#include "utils/builtins.h"
 #include "src/models.c"
 
-
-#define PG_RETURN_url(x)    PG_RETURN_POINTER(x)
+#define PG_RETURN_URL(x)    PG_RETURN_POINTER(x)
 
 PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(url_in);
 
-Datum url_in(PG_FUNCTION_ARGS) {
-    elog(DEBUG1, "XXX world");
+int32 getComparisonResult(const struct FunctionCallInfoBaseData *fcinfo) {
+    URL const *url1 = (URL *) PG_GETARG_POINTER(0);
+    URL const *url2 = (URL *) PG_GETARG_POINTER(1);
 
+    return strcmp(url1->url, url2->url);
+}
+
+
+Datum url_in(PG_FUNCTION_ARGS) {
     char const *s = PG_GETARG_CSTRING(0);
-    fromString(s);
-    PG_RETURN_url(cstring_to_text(s));
+    URL *url = urlFromString(s);
+    PG_RETURN_URL(url);
 }
 
 PG_FUNCTION_INFO_V1(url_out);
 
-Datum
-url_out(PG_FUNCTION_ARGS) {
-    Datum arg = PG_GETARG_DATUM(0);
-    PG_RETURN_CSTRING(TextDatumGetCString(arg));
+Datum url_out(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_DETOAST_DATUM(PG_GETARG_POINTER(0));
+    PG_RETURN_CSTRING(url->url);
 }
-
 
 PG_FUNCTION_INFO_V1(getauthority);
 Datum
-getauthority(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
-
-    URL url = fromString(s);
-
-    PG_RETURN_CSTRING(cstring_to_text(url.host));
-
+getauthority(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getAuthorityFromUrl(url);
 }
 
-PG_FUNCTION_INFO_V1(getdefaultport);
-Datum
-getdefaultport(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
-
-    URL url = fromString(s);
-    char* dPort = defaultPort(url);
-
-    PG_RETURN_CSTRING(cstring_to_text(dPort));
-
-}
 PG_FUNCTION_INFO_V1(getfile);
 Datum
-getfile(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
+getfile(PG_FUNCTION_ARGS) {
+URL const *url = (URL *) PG_GETARG_POINTER(0);
+return getFileFromUrl(url);
+}
 
-    URL url = fromString(s);
+PG_FUNCTION_INFO_V1(getuserinfo);
 
-    PG_RETURN_CSTRING(cstring_to_text(url.path));
+Datum
+getuserinfo(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getUsernameFromUrl(url);
 
 }
 
-PG_FUNCTION_INFO_V1(gethost);
+PG_FUNCTION_INFO_V1(getscheme);
+
 Datum
-gethost(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
-
-    URL url = fromString(s);
-
-    PG_RETURN_CSTRING(cstring_to_text(url.host));
-
+getscheme(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getSchemeFromUrl(url);
 }
 
-PG_FUNCTION_INFO_V1(getpath);
+PG_FUNCTION_INFO_V1(getquery);
+
 Datum
-getpath(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
+getquery(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getQueryFromUrl(url);
+}
 
-    URL url = fromString(s);
-    //elog(DEBUG1,"hello111");
+PG_FUNCTION_INFO_V1(getref);
 
-    PG_RETURN_CSTRING(cstring_to_text(url.path));
+Datum
+getref(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getRefFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getport);
 Datum
-getport(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
-
-    URL url = fromString(s);
-
-    char *host = url.host;
-
-    // detecting the first occurence of ":"
-    char* ptr;
-    int portSign = ':';
-    ptr = strchr(host, portSign);
-    if(ptr == NULL){
-        // no port given, returns nothing
-        PG_RETURN_CSTRING(cstring_to_text("No port in URL"));
-
-    }
-    else {
-        // deleting the first character to have the ":" removed from the string of char
-        PG_RETURN_CSTRING(cstring_to_text(ptr++));
-
-
-    }
-
+getport(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getPortFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getprotocol);
 Datum
-getprotocol(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
-
-    URL url = fromString(s);
-    char* protocol = url.scheme;
-
-    // deleting the 3 last characters from the array (://)
-    protocol[strlen(protocol)-3] = '\0';
-
-
-    PG_RETURN_CSTRING(cstring_to_text(protocol));
+getprotocol(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getProtocolFromUrl(url);
 }
 
-PG_FUNCTION_INFO_V1(getquery);
+PG_FUNCTION_INFO_V1(getpath);
+
 Datum
-getquery(PG_FUNCTION_ARGS)
-{
-    Datum arg = PG_GETARG_DATUM(0);
-    char const *s = TextDatumGetCString(arg);
-
-    URL url = fromString(s);
-
-
-    PG_RETURN_CSTRING(cstring_to_text(url.query));
+getpath(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getPathFromUrl(url);
 }
 
+PG_FUNCTION_INFO_V1(equals);
 
+Datum
+equals(PG_FUNCTION_ARGS) {
+    PG_RETURN_BOOL(getComparisonResult(fcinfo) == 0);
+}
 
+PG_FUNCTION_INFO_V1(urlne);
 
+Datum
+urlne(PG_FUNCTION_ARGS) {
+    PG_RETURN_BOOL(getComparisonResult(fcinfo) != 0);
+}
+
+PG_FUNCTION_INFO_V1(urllt);
+
+Datum
+urllt(PG_FUNCTION_ARGS) {
+    PG_RETURN_BOOL(getComparisonResult(fcinfo) < 0);
+
+}
+
+PG_FUNCTION_INFO_V1(urlle);
+
+Datum
+urlle(PG_FUNCTION_ARGS) {
+    PG_RETURN_BOOL(getComparisonResult(fcinfo) <= 0);
+
+}
+
+PG_FUNCTION_INFO_V1(urlgt);
+
+Datum
+urlgt(PG_FUNCTION_ARGS) {
+    PG_RETURN_BOOL(getComparisonResult(fcinfo) > 0);
+}
+
+PG_FUNCTION_INFO_V1(urlge);
+
+Datum
+urlge(PG_FUNCTION_ARGS) {
+    PG_RETURN_BOOL(getComparisonResult(fcinfo) >= 0);
+}
+
+PG_FUNCTION_INFO_V1(cmpurls);
+
+Datum
+cmpurls(PG_FUNCTION_ARGS) {
+    PG_RETURN_INT32(getComparisonResult(fcinfo));
+
+}
+
+PG_FUNCTION_INFO_V1(hashFromUrl);
+Datum
+hashFromUrl(PG_FUNCTION_ARGS) {
+    URL const *value = (URL*) PG_GETARG_DATUM(0);
+
+    int32 hash = 0;
+
+    char const *url = getUrl(value);
+
+    while (*url++) {
+        hash += 31 * hash + *url;
+    }
+
+    PG_RETURN_INT32(hash);
+}
