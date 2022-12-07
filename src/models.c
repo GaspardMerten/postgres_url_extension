@@ -26,8 +26,7 @@ struct protocol_handler{
     const char *protocol2;
     const char *protocol3;
     const char *protocol4;
-} list = {"http","https","file","file"};
-
+} list = {"http","https","file","jar"};
 
 Datum mallocAndMakeSlice(const char *start, int length) {
     PG_RETURN_TEXT_P(cstring_to_text_with_len(start, length));
@@ -72,23 +71,18 @@ Datum getUsernameFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme, delta);
 }
 
-URL *urlFromString(const char *source) {
+URL *urlFromString1(const char *source) {
     u_int8_t pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
-
     int currentPointer = 0;
-
     char lastChar = '\0';
-
     int charInSource = 0;
 
     const char *sourceStart = source;
 
     while (*source) {
-
         if (currentPointer == 2 && *source == ':') {
             currentPointer = 3;
         }
-
         if ((currentPointer == 2 || currentPointer == 3) && *source == '/') {
             currentPointer = 4;
         }
@@ -99,30 +93,113 @@ URL *urlFromString(const char *source) {
             *source == '#') {
             currentPointer = 6;
         }
-
         pointerSize[currentPointer]++;
-
         if (*source == '@') {
             pointerSize[1] = pointerSize[2];
             pointerSize[2] = 0;
             currentPointer = 2;
         }
-
         if (currentPointer == 0 && lastChar == '/' && *source == '/') {
             currentPointer = 2;
         }
-
         lastChar = *source;
         charInSource++;
         source++;
     }
-
     if (pointerSize[2] == 0) { // no host part -> invalid url
         ereport(ERROR,
                 (
                         errmsg("Invalid url format."),
                         errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
                         errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
+                )
+        );
+    }
+    int32 schemeStructSize = VARHDRSZ + charInSource + sizeof(u_int8_t) * lengthof(pointerSize);
+    URL *url = (URL *) palloc(schemeStructSize);
+    SET_VARSIZE(url, schemeStructSize);
+    memcpy(url->url, sourceStart, charInSource);
+    url->scheme = pointerSize[0];
+    url->user = pointerSize[1];
+    url->host = pointerSize[2];
+    url->port = pointerSize[3];
+    url->path = pointerSize[4];
+    url->query = pointerSize[5];
+    url->fragment = pointerSize[6];
+
+    return url;
+}
+
+URL *urlFromString(const char *source) {
+    u_int8_t pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
+    u_int8_t pos = 0;
+    int currentPointer = 6;
+    int previousPointer = 6;
+    char lastChar = '\0';
+    int charInSource = 0;
+
+    const char *sourceStart = source;
+    const char *sourceEnd = source;
+    while (*source){sourceEnd++;}
+
+//    u_int8_t scheme; 0
+//    u_int8_t host;1
+//    u_int8_t path;2
+//    u_int8_t query;3
+//    u_int8_t user;4
+//    u_int8_t port;5
+//    u_int8_t fragment;6
+//
+    while (*sourceStart <= *sourceEnd) {
+        if (currentPointer == 6 && *sourceEnd == '#') {
+            currentPointer = 3;
+            previousPointer=6;
+            pos=0;
+        }
+        if (currentPointer == 6 && *sourceEnd == '?') {
+            currentPointer = 2;
+            previousPointer=3;
+            pos=0;
+        }
+        if (currentPointer==6 && *sourceEnd == ':' && lastChar == '/' ){
+            currentPointer=1;
+            previousPointer=6;
+            pos=0;
+
+        }
+        if ((currentPointer == 2 || currentPointer == 3) && *source == '/') {
+            currentPointer = 4;
+            pointerSize[currentPointer]=pos;
+            pos=0;
+        }
+        if ((currentPointer == 2 || currentPointer == 3 || currentPointer == 4) && *source == '?') {
+            currentPointer = 5;
+            pointerSize[currentPointer]=pos;
+            pos=0;
+        }
+        if ((currentPointer == 2 || currentPointer == 3 || currentPointer == 4 || currentPointer == 5) &&
+            *source == '#') {
+            currentPointer = 6;
+            pointerSize[currentPointer]=pos;
+            pos=0;
+        }
+        pos++;
+        if (*source == '@') {
+            pointerSize[1] = pointerSize[2];
+            pointerSize[2] = 0;
+            currentPointer = 2;
+        }
+
+        lastChar = *sourceEnd;
+        charInSource++;
+        sourceEnd--;
+    }
+    if (pointerSize[2] == 0) { // no host part -> invalid url
+        ereport(ERROR,
+                (
+                        errmsg("Invalid url format."),
+                                errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
+                                errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
                 )
         );
     }
@@ -227,7 +304,7 @@ URL *fromStringWithContext(const URL *context, const char *source) {
             strcat(new_path  , path);
         }
     }
-    int32 schemeStructSize =lengthof(new_scheme) + lengthof(new_host) +lengthof(new_path) +lengthof(new_query) +lengthof(new_fragment)  ;
+    int32 schemeStructSize =lengthof(new_scheme) + lengthof(new_host) +lengthof(new_path) +lengthof(new_query) +lengthof(new_fragment);
     URL *url = (URL *) palloc(schemeStructSize);
     SET_VARSIZE(url, schemeStructSize);
 
@@ -236,7 +313,6 @@ URL *fromStringWithContext(const URL *context, const char *source) {
     url->path = *new_path;
     url->query = *new_query;
     url->fragment = *new_fragment;
-
 
     return url;
 }
