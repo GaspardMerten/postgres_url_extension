@@ -147,7 +147,6 @@ URL *urlFromString(const char *source) {
     int previousPointer;
     char lastChar = '\0';
     int charInSource = 0;
-
     const char *sourceStart = source;
 
     while (*source){charInSource++;source++;}
@@ -223,7 +222,7 @@ URL *urlFromString(const char *source) {
     return url;
 }
 
-URL *fromStringWithContext(const URL *context, const char *source) {
+URL *urlFromStringWithContext(const URL *context, const char *source) {
     URL *spec = urlFromString(source);
     char scheme[10] = "";
     char host[1024] = "";
@@ -318,7 +317,7 @@ URL *fromStringWithContext(const URL *context, const char *source) {
 }
 
 
-URL *fromProtocolHostPortFile(const char *protocol,const char *host, const int *port, const char *file) {
+URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, const int *port, const char *file) {
     char new_scheme[10] = "";
     char new_host[1024] = "";
     char new_path[2048] = "";
@@ -383,11 +382,11 @@ URL *fromProtocolHostPortFile(const char *protocol,const char *host, const int *
     return url;
 }
 
-URL *fromProtocolHostFile(const char *protocol,const char *host,const char *file) {
+URL *urlFromromProtocolHostFile(const char *protocol,const char *host,const char *file) {
     int *port = NULL;
     *port = -1;
 
-    URL *url= fromProtocolHostPortFile(protocol, host, port, file);
+    URL *url= urlFromProtocolHostPortFile(protocol, host, port, file);
 
     return url;
 }
