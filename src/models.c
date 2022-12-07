@@ -49,6 +49,16 @@ Datum getPortFromUrl(const URL *url) {
                               url->port - delta); // +delta (and thus -delta for length) removes the ":"
 }
 
+char *getUrl(const URL *url) {
+    int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
+
+    char *urlString = malloc((totalLength + 1) * sizeof(char));
+    strncpy(urlString, url->url, totalLength);
+    *(urlString + totalLength) = '\0';
+
+    return urlString;
+}
+
 Datum getRefFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port + url->path + url->query,
                               url->fragment);
