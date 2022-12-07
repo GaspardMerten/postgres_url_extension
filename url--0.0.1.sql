@@ -194,4 +194,3 @@ CREATE OPERATOR CLASS url_ops
     OPERATOR 4 >= ,
     OPERATOR 5 > ,
     FUNCTION 1 cmpUrls(url, url);
-

@@ -12,8 +12,7 @@ int32 getComparisonResult(const struct FunctionCallInfoBaseData *fcinfo) {
     URL const *url1 = (URL *) PG_GETARG_POINTER(0);
     URL const *url2 = (URL *) PG_GETARG_POINTER(1);
 
-
-    return strcmp(getUrl(url1), getUrl(url2));
+    return strcmp(url1->url, url2->url);
 }
 
 
@@ -26,8 +25,8 @@ Datum url_in(PG_FUNCTION_ARGS) {
 PG_FUNCTION_INFO_V1(url_out);
 
 Datum url_out(PG_FUNCTION_ARGS) {
-    URL *url = (URL *) PG_GETARG_POINTER(0);
-    PG_RETURN_CSTRING(getUrl(url));
+    URL const *url = (URL *) PG_DETOAST_DATUM(PG_GETARG_POINTER(0));
+    PG_RETURN_CSTRING(url->url);
 }
 
 PG_FUNCTION_INFO_V1(getauthority);
@@ -136,5 +135,21 @@ PG_FUNCTION_INFO_V1(cmpurls);
 Datum
 cmpurls(PG_FUNCTION_ARGS) {
     PG_RETURN_INT32(getComparisonResult(fcinfo));
+
 }
 
+PG_FUNCTION_INFO_V1(hashFromUrl);
+Datum
+hashFromUrl(PG_FUNCTION_ARGS) {
+    URL const *value = (URL*) PG_GETARG_DATUM(0);
+
+    int32 hash = 0;
+
+    char const *url = getUrl(value);
+
+    while (*url++) {
+        hash += 31 * hash + *url;
+    }
+
+    PG_RETURN_INT32(hash);
+}

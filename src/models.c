@@ -28,7 +28,6 @@ Datum getHostFromUrl(const URL *url) {
 }
 
 
-
 Datum getSchemeFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url, url->scheme);
 }
@@ -42,12 +41,12 @@ Datum getPortFromUrl(const URL *url) {
                               url->port - delta); // +delta (and thus -delta for length) removes the ":"
 }
 
-char* getUrl(const URL *url) {
+char *getUrl(const URL *url) {
     int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
 
-    char* urlString = malloc((totalLength+1)*sizeof(char));
+    char *urlString = malloc((totalLength + 1) * sizeof(char));
     strncpy(urlString, url->url, totalLength);
-    *(urlString+totalLength) = '\0';
+    *(urlString + totalLength) = '\0';
 
     return urlString;
 }
@@ -123,17 +122,20 @@ URL *urlFromString(const char *source) {
         ereport(ERROR,
                 (
                         errmsg("Invalid url format."),
-                                errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
+                                errdetail(
+                                        "The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)",
+                                        sourceStart),
                                 errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
                 )
         );
     }
 
-    int32 schemeStructSize = sizeof(URL)+sizeof(char)*charInSource-1;
+    int32 schemeStructSize = sizeof(URL) + sizeof(char) * charInSource;
     URL *url = (URL *) palloc(schemeStructSize);
     url->length = ((uint32) schemeStructSize << 2);
-    memcpy(url->url, sourceStart, charInSource);
-
+    memcpy(url->url, sourceStart, charInSource+1);
+    char const* endSymbol = "\0";
+    strcat(url->url, endSymbol);
     url->scheme = pointerSize[0];
     url->user = pointerSize[1];
     url->host = pointerSize[2];
