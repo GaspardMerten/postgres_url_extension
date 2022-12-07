@@ -9,14 +9,15 @@ CREATE TABLE table_with_url
     my_url url
 );
 
-CREATE INDEX am ON table_with_url (my_url) WHERE equals(my_url, url_in('https://www.google.be'));
+-- CREATE INDEX am ON table_with_url (my_url) WHERE equals(my_url, url_in('https://www.google.be'));
 
 INSERT INTO table_with_url
 VALUES ('https://gaspardmertenpremierdunometavecuntreslongnom@www.norse.be.super:4242/doc/?x#4'),
        ('http://www.norse.be.super:4242/doc/?x#4'),
        ('https://gaspardmertenpremierdunometavecuntreslongnom@www.norse.be.super:4242/doc/#4'),
        ('https://w@x.be/doc/?x#4'),
-       ('httpsx://www.norse.be.super:4242/doc/?x#4');
+       ('httpsx://www.norse.be.super:4242/doc/?x#4'),
+       ('/doc/?x#4');
 SELECT *
 from table_with_url;
 SELECT getscheme(my_url),

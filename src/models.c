@@ -2,23 +2,22 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <utils/builtins.h>
-#include <libpq-fe.h>
+//#include <libpq-fe.h>
 
 
 typedef struct URL {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-    int32_t length; /// DO NOT REMOVE, used internally
+    uint32 length; /// DO NOT REMOVE, used internally
 #pragma clang diagnostic pop
-
-    u_int8_t scheme;
-    u_int8_t host;
-    u_int8_t path;
-    u_int8_t query;
-    u_int8_t user;
-    u_int8_t port;
-    u_int8_t fragment;
-    char url[FLEXIBLE_ARRAY_MEMBER];
+    int8 scheme;
+    int8 host;
+    int8 path;
+    int8 query;
+    int8 user;
+    int8 port;
+    int8 fragment;
+    char url[];
 } URL;
 
 struct protocol_handler{
@@ -73,7 +72,6 @@ Datum getPathFromUrl(const URL *url) {
 }
 
 Datum getUsernameFromUrl(const URL *url) {
-    char int_str[20];
     int delta = 0;
     if (url->user > 0) {
         delta = url->user - 1; // prevent inclusion of @
@@ -82,13 +80,11 @@ Datum getUsernameFromUrl(const URL *url) {
 }
 
 URL *urlFromString1(const char *source) {
-    u_int8_t pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
+    int8 pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
     int currentPointer = 0;
     char lastChar = '\0';
     int charInSource = 0;
-
     const char *sourceStart = source;
-
     while (*source) {
         if (currentPointer == 2 && *source == ':') {
             currentPointer = 3;
@@ -120,15 +116,19 @@ URL *urlFromString1(const char *source) {
         ereport(ERROR,
                 (
                         errmsg("Invalid url format."),
-                        errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
-                        errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
+                                errdetail(
+                                        "The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)",
+                                        sourceStart),
+                                errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
                 )
         );
     }
-    int32 schemeStructSize = VARHDRSZ + charInSource + sizeof(u_int8_t) * lengthof(pointerSize);
+    int32 schemeStructSize = sizeof(URL) + sizeof(char) * charInSource;
     URL *url = (URL *) palloc(schemeStructSize);
-    SET_VARSIZE(url, schemeStructSize);
-    memcpy(url->url, sourceStart, charInSource);
+    url->length = ((uint32) schemeStructSize << 2);
+    memcpy(url->url, sourceStart, charInSource+1);
+    char const* endSymbol = "\0";
+    strcat(url->url, endSymbol);
     url->scheme = pointerSize[0];
     url->user = pointerSize[1];
     url->host = pointerSize[2];
@@ -141,82 +141,78 @@ URL *urlFromString1(const char *source) {
 }
 
 URL *urlFromString(const char *source) {
-    u_int8_t pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
-    u_int8_t pos = 0;
+    int8 pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
+    int8 pos = 0;
     int currentPointer = 6;
-    int previousPointer = 6;
+    int previousPointer;
     char lastChar = '\0';
     int charInSource = 0;
 
     const char *sourceStart = source;
-    const char *sourceEnd = source;
-    while (*source){sourceEnd++;}
 
-//    u_int8_t scheme; 0
-//    u_int8_t host;1
-//    u_int8_t path;2
-//    u_int8_t query;3
-//    u_int8_t user;4
-//    u_int8_t port;5
-//    u_int8_t fragment;6
-//
-    while (*sourceStart <= *sourceEnd) {
-        if (currentPointer == 6 && *sourceEnd == '#') {
-            currentPointer = 3;
-            previousPointer=6;
-            pos=0;
-        }
-        if (currentPointer == 6 && *sourceEnd == '?') {
-            currentPointer = 2;
-            previousPointer=3;
-            pos=0;
-        }
-        if (currentPointer==6 && *sourceEnd == ':' && lastChar == '/' ){
-            currentPointer=1;
-            previousPointer=6;
-            pos=0;
-
-        }
-        if ((currentPointer == 2 || currentPointer == 3) && *source == '/') {
-            currentPointer = 4;
-            pointerSize[currentPointer]=pos;
-            pos=0;
-        }
-        if ((currentPointer == 2 || currentPointer == 3 || currentPointer == 4) && *source == '?') {
-            currentPointer = 5;
-            pointerSize[currentPointer]=pos;
-            pos=0;
-        }
-        if ((currentPointer == 2 || currentPointer == 3 || currentPointer == 4 || currentPointer == 5) &&
-            *source == '#') {
-            currentPointer = 6;
-            pointerSize[currentPointer]=pos;
-            pos=0;
-        }
+    while (*source){charInSource++;source++;}
+    source--;
+    charInSource--;
+    for (int i=0; i<=charInSource; i++) {
         pos++;
-        if (*source == '@') {
-            pointerSize[1] = pointerSize[2];
-            pointerSize[2] = 0;
-            currentPointer = 2;
+        if (currentPointer == 6 && *source == '#') {
+            currentPointer = 5;
+            previousPointer=6;
+            pointerSize[previousPointer]=pos;
+            pos=0;
         }
-
-        lastChar = *sourceEnd;
-        charInSource++;
-        sourceEnd--;
+        if ((currentPointer == 6 || currentPointer==5) && *source == '?') {
+            currentPointer = 2;
+            previousPointer=5;
+            pointerSize[previousPointer]=pos;
+            pos=0;
+        }
+        if ((currentPointer==6||currentPointer==5 || currentPointer==2)
+            && *source == '/' && lastChar == '/' ){
+            currentPointer=0;
+            previousPointer=2;
+            pos -= 2;
+            pointerSize[previousPointer]=pos;
+            pos=2;
+        }
+        if (i==charInSource){
+            if (currentPointer > 0){pointerSize[2]=pos;}
+            else{pointerSize[currentPointer]=pos;}
+        }else{
+            lastChar = *source;
+            source--;
+        }
     }
-    if (pointerSize[2] == 0) { // no host part -> invalid url
-        ereport(ERROR,
-                (
-                        errmsg("Invalid url format."),
-                                errdetail("The '%s' string does not appear to follow the following pattern => scheme://[username@]hostname[:port][path][?query][#fragment] pattern. ([value] means the value is optional)", sourceStart),
-                                errhint("Make sure you are entering a valid url. (not very helpful, we know...)")
-                )
-        );
+    // If we found a host check if there is a user or a port or path
+    if (pointerSize[2] != 0 ){
+        for (int i = 0; i < pointerSize[0]; i++){
+            source++;
+        }
+        currentPointer=2;
+        int8 totalHostSize = pointerSize[2];
+        pointerSize[2]=0;
+       for (int i=0; i<totalHostSize; i++){
+            if (currentPointer == 2 && *source == ':') {
+                currentPointer = 3;
+            }
+            if ((currentPointer == 2 || currentPointer == 3) && *source == '/') {
+                currentPointer = 4;
+            }
+            pointerSize[currentPointer]++;
+           if (*source == '@') {
+               pointerSize[1] = pointerSize[2];
+               pointerSize[2] = 0;
+               currentPointer = 2;
+           }
+            source++;
+        }
     }
-    int32 schemeStructSize = VARHDRSZ + charInSource + sizeof(u_int8_t) * lengthof(pointerSize);
+    int32 schemeStructSize = sizeof(URL) + sizeof(char) * charInSource;
     URL *url = (URL *) palloc(schemeStructSize);
-    SET_VARSIZE(url, schemeStructSize);
-    memcpy(url->url, sourceStart, charInSource);
+    url->length = ((uint32) schemeStructSize << 2);
+    memcpy(url->url, sourceStart, charInSource+1);
+    char const* endSymbol = "\0";
+    strcat(url->url, endSymbol);
     url->scheme = pointerSize[0];
     url->user = pointerSize[1];
     url->host = pointerSize[2];
@@ -224,14 +220,8 @@ URL *urlFromString(const char *source) {
     url->path = pointerSize[4];
     url->query = pointerSize[5];
     url->fragment = pointerSize[6];
-
     return url;
 }
-
-
-
-
-
 
 URL *fromStringWithContext(const URL *context, const char *source) {
     URL *spec = urlFromString(source);
@@ -332,55 +322,55 @@ URL *fromProtocolHostPortFile(const char *protocol,const char *host, const int *
     char new_scheme[10] = "";
     char new_host[1024] = "";
     char new_path[2048] = "";
-    PGconn *conn;
-    PGresult        *res;
+//    PGconn *conn;
+//    PGresult        *res;
     // check the database if the protocol exist
-    conn = PQconnectdb("dbname=test host=localhost user=postgres password=postgres");
-    char request[100];
-    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %s)", protocol);
-    res= PQexec(conn, request);
-
-    if(PQntuples(res) > 0){
-        strcpy(new_scheme, protocol);
-        if (*port == -1 ){
-            strcpy(new_host,host);
-        }
-        else{sprintf(new_host, "%s:%d",host ,*port);}
-
-        strcpy(new_path,file);
-    }
-    else
-    {
-        int already_exist= 0;
-        if (protocol == list.protocol1 ||protocol == list.protocol2 ||
-        protocol == list.protocol3 ||protocol == list.protocol4){
-            already_exist= 1;
-        }
-        if (already_exist){
-          strcpy(new_scheme, protocol);
-            if (*port == -1 ){
-                strcpy(new_host,host);
-            }
-            else{sprintf(new_host, "%s:%d",host ,*port);}
-
-            strcpy(new_path,file);
-        } else {
-            ereport(ERROR,
-                    (
-                            errmsg("Invalid protocol format."),
-                            errdetail("The '%s' protocol isn't allowed", protocol),
-                            errhint("Make sure you are entering a protocol like: http, https, file, and jar.")
-                    )
-                    );
-        }
-    }
-//    strcpy(new_scheme, protocol);
-//    if (*port == -1 ){
-//        strcpy(new_host,host);
-//    }
-//    else{sprintf(new_host, "%s:%d",host ,*port);}
+//    conn = PQconnectdb("dbname=test host=localhost user=postgres password=postgres");
+//    char request[100];
+//    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %s)", protocol);
+//    res= PQexec(conn, request);
 //
-//    strcpy(new_path,file);
+//    if(PQntuples(res) > 0){
+//        strcpy(new_scheme, protocol);
+//        if (*port == -1 ){
+//            strcpy(new_host,host);
+//        }
+//        else{sprintf(new_host, "%s:%d",host ,*port);}
+//
+//        strcpy(new_path,file);
+//    }
+//    else
+//    {
+//        int already_exist= 0;
+//        if (protocol == list.protocol1 ||protocol == list.protocol2 ||
+//        protocol == list.protocol3 ||protocol == list.protocol4){
+//            already_exist= 1;
+//        }
+//        if (already_exist){
+//          strcpy(new_scheme, protocol);
+//            if (*port == -1 ){
+//                strcpy(new_host,host);
+//            }
+//            else{sprintf(new_host, "%s:%d",host ,*port);}
+//
+//            strcpy(new_path,file);
+//        } else {
+//            ereport(ERROR,
+//                    (
+//                            errmsg("Invalid protocol format."),
+//                            errdetail("The '%s' protocol isn't allowed", protocol),
+//                            errhint("Make sure you are entering a protocol like: http, https, file, and jar.")
+//                    )
+//                    );
+//        }
+//    }
+    strcpy(new_scheme, protocol);
+    if (*port == -1 ){
+        strcpy(new_host,host);
+    }
+    else{sprintf(new_host, "%s:%d",host ,*port);}
+
+    strcpy(new_path,file);
 
     int32 schemeStructSize =lengthof(new_scheme) + lengthof(new_host) +lengthof(new_path)  ;
     URL *url = (URL *) palloc(schemeStructSize);
