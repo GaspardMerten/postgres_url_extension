@@ -2,9 +2,9 @@
   <configuration default="false" name="test.sql" type="DatabaseScript" nameIsGenerated="true">
     <script-file value="$PROJECT_DIR$/test.sql" />
     <script-mode>FILE</script-mode>
-    <data-source id="f0ed6e90-63d6-4bf0-881f-023741a3ddbf" namespace="database/&quot;test&quot;/schema/&quot;public&quot;" />
+    <data-source id="ee88ba31-51b8-4949-8c3b-160c60c89db2" />
     <method v="2">
-      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Update extension" />
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_test1" />
     </method>
   </configuration>
 </component>
