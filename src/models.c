@@ -31,6 +31,16 @@ Datum getHostFromUrl(const URL *url) {
 Datum getSchemeFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url, url->scheme);
 }
+Datum getFileFromUrl(const URL *url) {
+    int totalLengthWithoutFragment = url->scheme + url->user + url->host + url->port + url->path + url->query;
+
+    return mallocAndMakeSlice(url->url, totalLengthWithoutFragment);
+}
+Datum getRawUrlFromUrl(const URL *url) {
+    int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
+
+    return mallocAndMakeSlice(url->url, totalLength);
+}
 
 Datum getPortFromUrl(const URL *url) {
     int delta = 0;

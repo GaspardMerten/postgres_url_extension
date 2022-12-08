@@ -73,12 +73,39 @@ CREATE FUNCTION getScheme(url) RETURNS text
 AS
 '$libdir/url';
 
-CREATE FUNCTION equals(url, url) RETURNS bool
+CREATE FUNCTION getFile(url) RETURNS text
     IMMUTABLE
     STRICT
     LANGUAGE C
 AS
 '$libdir/url';
+
+CREATE FUNCTION getUrl(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS
+'$libdir/url';
+
+
+CREATE FUNCTION equals(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT geturl(url1) = geturl(url2)';
+
+CREATE FUNCTION sameFile(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getfile(url1) = getfile(url2)';
+
+
+CREATE FUNCTION sameHost(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+    as 'SELECT getauthority(url1) = getauthority(url2)';
 
 
 CREATE FUNCTION urlne(url, url) RETURNS bool
@@ -193,4 +220,7 @@ CREATE OPERATOR CLASS url_ops
     OPERATOR 3 = ,
     OPERATOR 4 >= ,
     OPERATOR 5 > ,
-    FUNCTION 1 cmpUrls(url, url);
+    FUNCTION 1 cmpUrls(url, url)
+;
+
+

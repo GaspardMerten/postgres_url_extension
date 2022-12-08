@@ -86,12 +86,22 @@ getpath(PG_FUNCTION_ARGS) {
     return getPathFromUrl(url);
 }
 
-PG_FUNCTION_INFO_V1(equals);
+PG_FUNCTION_INFO_V1(geturl);
 
 Datum
-equals(PG_FUNCTION_ARGS) {
-    PG_RETURN_BOOL(getComparisonResult(fcinfo) == 0);
+geturl(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getRawUrlFromUrl(url);
 }
+
+PG_FUNCTION_INFO_V1(getfile);
+
+Datum
+getfile(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getFileFromUrl(url);
+}
+
 
 PG_FUNCTION_INFO_V1(urlne);
 
@@ -135,7 +145,6 @@ PG_FUNCTION_INFO_V1(cmpurls);
 Datum
 cmpurls(PG_FUNCTION_ARGS) {
     PG_RETURN_INT32(getComparisonResult(fcinfo));
-
 }
 
 PG_FUNCTION_INFO_V1(hashFromUrl);
