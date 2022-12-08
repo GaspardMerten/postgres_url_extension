@@ -365,23 +365,24 @@ URL *urlFromStringWithContext(const URL *context, const char *source) {
 
 URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, int port, const char *file) {
     char *finalUrlString;
-
+//
 //    PGconn *conn;
-//    PGresult        *res;
-    // check the database if the protocol exist
-//    conn = PQconnectdb("dbname=test host=localhost user=postgres password=postgres");
+//    PGresult *res;
+//    // check the database if the protocol exist
+//    conn = PQconnectdb("dbname=postgres host=localhost user=postgres password=postgres");
 //    char request[100];
-//    sprintf(request,"SELECT COUNT(*) FROM [Table] WHERE (scheme = %s)", protocol);
+//    sprintf(request,"SELECT COUNT(*) FROM table_with_url WHERE (getprotocol(my_url) = '%s')", protocol);
 //    res= PQexec(conn, request);
 //
 //    if(PQntuples(res) > 0){
-//        strcpy(new_scheme, protocol);
-//        if (*port == -1 ){
-//            strcpy(new_host,host);
+//        if (port < 0 ){
+//            finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+ sizeof(file));
+//            sprintf(finalUrlString, "%s://%s%s", protocol,host,file);
 //        }
-//        else{sprintf(new_host, "%s:%d",host ,*port);}
-//
-//        strcpy(new_path,file);
+//        else{
+//            finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+1+ sizeof(port)+ sizeof(file));
+//            sprintf(finalUrlString, "%s://%s:%d%s", protocol,host,port,file);
+//        }
 //    }
 //    else
 //    {
@@ -391,13 +392,14 @@ URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, int port
 //            already_exist= 1;
 //        }
 //        if (already_exist){
-//          strcpy(new_scheme, protocol);
-//            if (*port == -1 ){
-//                strcpy(new_host,host);
+//            if (port < 0 ){
+//                finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+ sizeof(file));
+//                sprintf(finalUrlString, "%s://%s%s", protocol,host,file);
 //            }
-//            else{sprintf(new_host, "%s:%d",host ,*port);}
-//
-//            strcpy(new_path,file);
+//            else{
+//                finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+1+ sizeof(port)+ sizeof(file));
+//                sprintf(finalUrlString, "%s://%s:%d%s", protocol,host,port,file);
+//            }
 //        } else {
 //            ereport(ERROR,
 //                    (
@@ -424,7 +426,6 @@ URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, int port
 
 URL *urlFromProtocolHostFile(const char *protocol,const char *host,const char *file) {
     int port = -1;
-
     URL *url= urlFromProtocolHostPortFile(protocol, host, port, file);
 
     return url;

@@ -13,7 +13,7 @@ CREATE INDEX index3 ON table_with_url (my_url) WHERE equals(my_url, url_in('http
 CREATE INDEX imdex4 ON table_with_url (my_url);
 
 INSERT INTO table_with_url
-VALUES (url_in('http','www.norse.be.super',2,'/doc/')),
+VALUES (url_in('pp','www.norse.be.super',2,'/doc/')),
        (url_in('http','www.norse.be.super','/doc/')),
        (url_in(url_in('https://a@www.google.be:2/duc/'),'doc/#3')),
        ('https://gaspardmertenpremierdunometavecuntreslongnom@www.norse.be.super:4242/lul/?x#4'),
@@ -38,5 +38,8 @@ EXPLAIN ANALYSE SELECT equals(r.my_url, t.my_url)
 EXPLAIN ANALYSE SELECT r.my_url
                 from table_with_url r
                 where geturl(my_url) = 'https://gaspardmertenpremierdunometavecuntreslongnom@www.norse.be.super:4242/doc/#4';
+EXPLAIN ANALYSE SELECT r.my_url
+                from table_with_url r
+                where getprotocol(my_url) = 'https';
 SELECT getdefaultport(my_url) FROM table_with_url;
 SELECT getport(my_url) FROM table_with_url;
