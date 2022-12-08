@@ -30,6 +30,12 @@ struct protocol_handler{
 Datum mallocAndMakeSlice(const char *start, int length) {
     PG_RETURN_TEXT_P(cstring_to_text_with_len(start, length));
 }
+Datum mallocAndMakeSliceToInt(const char *start, int length){
+    char *str = NULL;
+    str[0] = start;
+    str[length+1] = '\0';
+    PG_RETURN_INT64(atoi((const char *) str));
+}
 
 Datum getHostFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user, url->host);
@@ -38,14 +44,13 @@ Datum getHostFromUrl(const URL *url) {
 Datum getSchemeFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url, url->scheme);
 }
-Datum getFileFromUrl(const URL *url) {
-    int totalLengthWithoutFragment = url->scheme + url->user + url->host + url->port + url->path + url->query;
 
-    return mallocAndMakeSlice(url->url, totalLengthWithoutFragment);
+Datum getFileFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port, url->path + url->query);
 }
+
 Datum getRawUrlFromUrl(const URL *url) {
     int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
-
     return mallocAndMakeSlice(url->url, totalLength);
 }
 
@@ -54,17 +59,20 @@ Datum getPortFromUrl(const URL *url) {
     if (url->port > 0) {
         delta = 1;
     }
-    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + delta,
-                              url->port - delta); // +delta (and thus -delta for length) removes the ":"
+    //PG_RETURN_INT16(atoi(cstring_to_text_with_len(url->url
+    // + url->scheme + url->user + url->host + delta, url->port - delta)->vl_dat));
+    // allocate memory for string
+    PG_RETURN_INT16(atoi(text_to_cstring(cstring_to_text_with_len(url->url + url->scheme + url->user + url->host + delta, url->port - delta))));
+    /*return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + delta,
+       url->port - delta); // +delta (and thus -delta for length) removes the ":"
+    */
 }
 
 char *getUrl(const URL *url) {
     int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
-
     char *urlString = malloc((totalLength + 1) * sizeof(char));
     strncpy(urlString, url->url, totalLength);
     *(urlString + totalLength) = '\0';
-
     return urlString;
 }
 
@@ -81,6 +89,10 @@ Datum getPathFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + url->port, url->path);
 }
 
+Datum getProtocolFromUrl(const URL *url) {
+    return mallocAndMakeSlice(url->url, url->scheme - 3); // -3 to delete the ://
+}
+
 Datum getUsernameFromUrl(const URL *url) {
     int delta = 0;
     if (url->user > 0) {
@@ -88,6 +100,7 @@ Datum getUsernameFromUrl(const URL *url) {
     }
     return mallocAndMakeSlice(url->url + url->scheme, delta);
 }
+
 char *getSchemeString(const URL *url){
     return text_to_cstring(cstring_to_text_with_len(url->url,+ url->scheme));
 }
