@@ -38,6 +38,16 @@ Datum getHostFromUrl(const URL *url) {
 Datum getSchemeFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url, url->scheme);
 }
+Datum getFileFromUrl(const URL *url) {
+    int totalLengthWithoutFragment = url->scheme + url->user + url->host + url->port + url->path + url->query;
+
+    return mallocAndMakeSlice(url->url, totalLengthWithoutFragment);
+}
+Datum getRawUrlFromUrl(const URL *url) {
+    int totalLength = url->scheme + url->user + url->host + url->port + url->path + url->query + url->fragment;
+
+    return mallocAndMakeSlice(url->url, totalLength);
+}
 
 Datum getPortFromUrl(const URL *url) {
     int delta = 0;
@@ -78,8 +88,26 @@ Datum getUsernameFromUrl(const URL *url) {
     }
     return mallocAndMakeSlice(url->url + url->scheme, delta);
 }
+char *getSchemeString(const URL *url){
+    return text_to_cstring(cstring_to_text_with_len(url->url,+ url->scheme));
+}
+char *getHostString(const URL *url){
+    return text_to_cstring(cstring_to_text_with_len(url->url +url->scheme,url->user + url->host + url->port));
+}
+char *getPathString(const URL *url){
+    return text_to_cstring(cstring_to_text_with_len(url->url + url->scheme + url->user
+    + url->host + url->port, url->path));
+}
+char *getQueryString(const URL *url){
+    return text_to_cstring(cstring_to_text_with_len(url->url + url->scheme + url->user
+    + url->host + url->port+url->path, url->query));
+}
+char *getFragmentString(const URL *url){
+    return text_to_cstring(cstring_to_text_with_len(url->url + url->scheme + url->user
+    + url->host + url->port+url->path +url->query, url->fragment));
+}
 
-URL *urlFromString1(const char *source) {
+URL *urlFromString(const char *source) {
     int8 pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
     int currentPointer = 0;
     char lastChar = '\0';
@@ -140,7 +168,7 @@ URL *urlFromString1(const char *source) {
     return url;
 }
 
-URL *urlFromString(const char *source) {
+URL *urlFromStringReverse(const char *source) {
     int8 pointerSize[] = {0, 0, 0, 0, 0, 0, 0};
     int8 pos = 0;
     int currentPointer = 6;
@@ -181,6 +209,11 @@ URL *urlFromString(const char *source) {
             lastChar = *source;
             source--;
         }
+    }
+    // if there is no scheme there is no hast, only a path
+    if (pointerSize[0]==0){
+        pointerSize[4]=pointerSize[2];
+        pointerSize[2]=0;
     }
     // If we found a host check if there is a user or a port or path
     if (pointerSize[2] != 0 ){
@@ -223,7 +256,7 @@ URL *urlFromString(const char *source) {
 }
 
 URL *urlFromStringWithContext(const URL *context, const char *source) {
-    URL *spec = urlFromString(source);
+    URL *spec = urlFromStringReverse(source);
     char scheme[10] = "";
     char host[1024] = "";
     char path[2048] = "";
@@ -241,23 +274,23 @@ URL *urlFromStringWithContext(const URL *context, const char *source) {
     char new_fragment[256] = "";
 
     // Initialize url spec
-    strcpy(scheme, (const char *) getSchemeFromUrl(spec));
-    strcpy(host, (const char *) getHostFromUrl(spec));
-    strcpy(path, (const char *) getPathFromUrl(spec));
-    strcpy(query, (const char *) getQueryFromUrl(spec));
-    strcpy(fragment, (const char *) getRefFromUrl(spec));
+    strcpy(scheme, getSchemeString(spec));
+    strcpy(host, getHostString(spec));
+    strcpy(path, getPathString(spec));
+    strcpy(query, getQueryString(spec));
+    strcpy(fragment, getFragmentString(spec));
     // Initialize context
-    strcpy(context_scheme, (const char *) getSchemeFromUrl(context)) ;
-    strcpy(context_host, (const char *) getHostFromUrl(context));
-    strcpy(context_path, (const char *) getPathFromUrl(context));
-    strcpy(context_query, (const char *) getQueryFromUrl(context));
-    strcpy(context_fragment, (const char *) getRefFromUrl(context));
+    strcpy(context_scheme, getSchemeString(context)) ;
+    strcpy(context_host, getHostString(context));
+    strcpy(context_path, getPathString(context));
+    strcpy(context_query, getQueryString(context));
+    strcpy(context_fragment, getFragmentString(context));
     // Initialize default new_url
-    strcpy(new_scheme, (const char *) getSchemeFromUrl(context)) ;
-    strcpy(new_host, (const char *) getHostFromUrl(context));
-    strcpy(new_path, (const char *) getPathFromUrl(context));
-    strcpy(new_query, (const char *) getQueryFromUrl(context));
-    strcpy(new_fragment, (const char *) getRefFromUrl(context));
+    strcpy(new_scheme,  getSchemeString(context)) ;
+    strcpy(new_host,  getHostString(context));
+    strcpy(new_path, getPathString(context));
+    strcpy(new_query, getQueryString(context));
+    strcpy(new_fragment, getFragmentString(context));
 
     // ref to current doc
     if ( strcmp(path,"") != 0 &&  strcmp(scheme,"") != 0
@@ -277,14 +310,14 @@ URL *urlFromStringWithContext(const URL *context, const char *source) {
         strcpy(new_fragment, fragment);
     } // the new URL is created as an absolute URL based on the spec alon
     else{
-        if (strcmp(scheme, context_scheme) != 0) {
+        if (strcmp(scheme, context_scheme) != 0 && strcmp(scheme,"") != 0) {
             strcpy(new_scheme, scheme) ;
             strcpy(new_host, host);
             strcpy(new_path, path);
             strcpy(new_query, query);
             strcpy(new_fragment, fragment);
         } //scheme component is inherited from the context URL
-        if (!strcmp(scheme,context_scheme)) {
+        if (strcmp(scheme,context_scheme)==0) {
             strcpy(new_scheme, context_scheme) ;
         } //  the spec is treated as absolute and the spec host and path will replace the context host and path
         if (strcmp(host,"") != 0) {
@@ -299,28 +332,27 @@ URL *urlFromStringWithContext(const URL *context, const char *source) {
             strcpy(new_path, path);
         } // path is treated as a relative path and is appended to the context path
         if (path[0] != '/') {
-            strcpy(new_path, context_scheme);
+            strcpy(new_path, context_path);
             strcat(new_path  , path);
         }
+        if(strcmp(query,"")!=0){
+            strcpy(new_query,query);
+        }
+        if(strcmp(fragment,"")!=0){
+            strcpy(new_fragment,fragment);
+        }
     }
-    int32 schemeStructSize =lengthof(new_scheme) + lengthof(new_host) +lengthof(new_path) +lengthof(new_query) +lengthof(new_fragment);
-    URL *url = (URL *) palloc(schemeStructSize);
-    SET_VARSIZE(url, schemeStructSize);
-
-    url->scheme =  *new_scheme;
-    url->host = *new_path;
-    url->path = *new_path;
-    url->query = *new_query;
-    url->fragment = *new_fragment;
-
+    char* finalUrlString = malloc(sizeof(new_scheme)+3+ sizeof(new_host)
+            + sizeof(new_path)+ sizeof(new_query)+sizeof(new_fragment));
+    sprintf(finalUrlString, "%s%s%s%s%s", new_scheme,new_host,new_path,new_query,new_fragment);
+    URL *url = urlFromStringReverse(finalUrlString);
     return url;
 }
 
 
-URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, const int *port, const char *file) {
-    char new_scheme[10] = "";
-    char new_host[1024] = "";
-    char new_path[2048] = "";
+URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, int port, const char *file) {
+    char *finalUrlString;
+
 //    PGconn *conn;
 //    PGresult        *res;
     // check the database if the protocol exist
@@ -363,28 +395,22 @@ URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, const in
 //                    );
 //        }
 //    }
-    strcpy(new_scheme, protocol);
-    if (*port == -1 ){
-        strcpy(new_host,host);
+    if (port < 0 ){
+        finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+ sizeof(file));
+        sprintf(finalUrlString, "%s://%s%s", protocol,host,file);
     }
-    else{sprintf(new_host, "%s:%d",host ,*port);}
+    else{
+        finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+1+ sizeof(port)+ sizeof(file));
+        sprintf(finalUrlString, "%s://%s:%d%s", protocol,host,port,file);
+    }
+    URL *url = urlFromString(finalUrlString);
 
-    strcpy(new_path,file);
-
-    int32 schemeStructSize =lengthof(new_scheme) + lengthof(new_host) +lengthof(new_path)  ;
-    URL *url = (URL *) palloc(schemeStructSize);
-    SET_VARSIZE(url, schemeStructSize);
-
-    url->scheme =  *new_scheme;
-    url->host = *new_path;
-    url->path = *new_path;
 
     return url;
 }
 
-URL *urlFromromProtocolHostFile(const char *protocol,const char *host,const char *file) {
-    int *port = NULL;
-    *port = -1;
+URL *urlFromProtocolHostFile(const char *protocol,const char *host,const char *file) {
+    int port = -1;
 
     URL *url= urlFromProtocolHostPortFile(protocol, host, port, file);
 
