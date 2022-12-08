@@ -49,8 +49,16 @@ Datum getPortFromUrl(const URL *url) {
     if (url->port > 0) {
         delta = 1;
     }
-    return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + delta,
+    //PG_RETURN_INT16(atoi(cstring_to_text_with_len(url->url + url->scheme + url->user + url->host + delta, url->port - delta)->vl_dat));
+    // allocate memory for string
+
+    PG_RETURN_INT16(atoi(text_to_cstring(cstring_to_text_with_len(url->url + url->scheme + url->user + url->host + delta, url->port - delta))));
+
+
+    /*return mallocAndMakeSlice(url->url + url->scheme + url->user + url->host + delta,
                               url->port - delta); // +delta (and thus -delta for length) removes the ":"
+
+    */
 }
 
 char *getUrl(const URL *url) {

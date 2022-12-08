@@ -31,6 +31,14 @@ CREATE FUNCTION getAuthority(url) RETURNS text
 AS
 '$libdir/url';
 
+CREATE FUNCTION getDefaultPort(url) RETURNS int8
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS
+'$libdir/url';
+
+
 CREATE FUNCTION getFile(url) RETURNS text
     IMMUTABLE
     STRICT
@@ -66,7 +74,7 @@ CREATE FUNCTION getProtocol(url) RETURNS text
 AS
 '$libdir/url';
 
-CREATE FUNCTION getPort(url) RETURNS text
+CREATE FUNCTION getPort(url) RETURNS int8
     IMMUTABLE
     STRICT
     LANGUAGE C

@@ -83,6 +83,29 @@ getport(PG_FUNCTION_ARGS) {
     return getPortFromUrl(url);
 }
 
+PG_FUNCTION_INFO_V1(getdefaultport);
+Datum
+getdefaultport(PG_FUNCTION_ARGS) {
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    // copy url->url array into string
+    char *protocol = url->url;
+    protocol[url->scheme - 3] = '\0';
+
+
+    if (strcmp(protocol, "http") == 0) {
+        PG_RETURN_INT32(80);
+    } else if (strcmp(protocol, "https") == 0) {
+        PG_RETURN_INT32(443);
+    } else if (strcmp(protocol, "ftp") == 0) {
+        PG_RETURN_INT32(21);
+    }
+    else if (strcmp(protocol, "ssh") == 0) {
+        PG_RETURN_INT32(22);
+    } else if (strcmp(protocol, "dns") == 0) {
+        PG_RETURN_INT32(53);
+    }
+
+}
 PG_FUNCTION_INFO_V1(getprotocol);
 Datum
 getprotocol(PG_FUNCTION_ARGS) {
