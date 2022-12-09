@@ -190,8 +190,10 @@ URL *urlFromStringReverse(const char *source) {
         charInSource++;
         source++;
     }
+
     source--;
     charInSource--;
+
     for (int i = 0; i <= charInSource; i++) {
         pos++;
         if (currentPointer == 6 && *source == '#') {
@@ -251,6 +253,7 @@ URL *urlFromStringReverse(const char *source) {
             source++;
         }
     }
+
     int32 schemeStructSize = sizeof(URL) + sizeof(char) * charInSource;
     URL *url = (URL *) palloc(schemeStructSize);
     url->length = ((uint32) schemeStructSize << 2);
@@ -268,7 +271,7 @@ URL *urlFromStringReverse(const char *source) {
 }
 
 URL *urlFromStringWithContext(const URL *context, const char *source) {
-    URL *spec = urlFromStringReverse(source);
+    URL const *spec = urlFromStringReverse(source);
     char scheme[10] = "";
     char host[1024] = "";
     char path[2048] = "";
@@ -354,10 +357,13 @@ URL *urlFromStringWithContext(const URL *context, const char *source) {
             strcpy(new_fragment, fragment);
         }
     }
+
     char *finalUrlString = malloc(sizeof(new_scheme) + 3 + sizeof(new_host)
                                   + sizeof(new_path) + sizeof(new_query) + sizeof(new_fragment));
     sprintf(finalUrlString, "%s%s%s%s%s", new_scheme, new_host, new_path, new_query, new_fragment);
+
     URL *url = urlFromStringReverse(finalUrlString);
+
     return url;
 }
 
@@ -372,7 +378,6 @@ URL *urlFromProtocolHostPortFile(const char *protocol, const char *host, int por
         sprintf(finalUrlString, "%s://%s:%d%s", protocol, host, port, file);
     }
     URL *url = urlFromString(finalUrlString);
-
 
     return url;
 }
