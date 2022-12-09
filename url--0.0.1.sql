@@ -126,18 +126,53 @@ CREATE FUNCTION equals(url1 url, url2 url) RETURNS bool
     LANGUAGE sql
 as 'SELECT geturl(url1) = geturl(url2)';
 
-CREATE FUNCTION sameFile(url1 url, url2 url) RETURNS bool
+CREATE FUNCTION sameProtocol(url1 url, url2 url) RETURNS bool
     IMMUTABLE
     STRICT
     LANGUAGE sql
-as 'SELECT getfile(url1) = getfile(url2)';
+as 'SELECT getprotocol(url1) = getprotocol(url2)';
 
+CREATE FUNCTION sameUser(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getUserinfo(url1) = getUserinfo(url2)';
 
 CREATE FUNCTION sameHost(url1 url, url2 url) RETURNS bool
     IMMUTABLE
     STRICT
     LANGUAGE sql
 as 'SELECT getauthority(url1) = getauthority(url2)';
+
+CREATE FUNCTION samePort(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getPort(url1) = getPort(url2)';
+
+CREATE FUNCTION samePath(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getpath(url1) = getpath(url2)';
+
+CREATE FUNCTION sameFile(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getfile(url1) = getfile(url2)';
+
+CREATE FUNCTION samQuery(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getquery(url1) = getquery(url2)';
+
+CREATE FUNCTION sameRef(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getref(url1) = getref(url2)';
 
 CREATE FUNCTION urlne(url, url) RETURNS bool
     IMMUTABLE
