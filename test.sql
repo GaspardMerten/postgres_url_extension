@@ -11,7 +11,7 @@ CREATE TABLE table_with_url
 INSERT INTO table_with_url
 VALUES (url_in('pp', 'www.norse.be.super', 2, '/doc/')),
        (url_in('http', 'www.google.be', '/doc/')),
-       (url_in(url_in('https://a@www.google.be:2/duc/'), 'doc/#3')),
+        (url_in(url_in('https://a@www.google.be:2/duc/'), '/doc/#3')),
        ('https://gaspardmertenpremierdunometavecuntreslongnom@www.norse.be.super:4242/lul/?x#4'),
        ('http://www.norse.be.super:4242/lal/?x#4'),
        ('https://gaspardmertenpremierdunometavecuntreslongnom@www.norse.be.super:4242/doc/#4'),
