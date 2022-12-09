@@ -43,7 +43,7 @@ CREATE TYPE url
     INTERNALLENGTH = VARIABLE
 );
 
-CREATE FUNCTION geturl(url) RETURNS text
+CREATE FUNCTION getUrl(url) RETURNS text
     IMMUTABLE
     STRICT
     LANGUAGE C
@@ -120,13 +120,24 @@ CREATE FUNCTION getScheme(url) RETURNS text
 AS
 '$libdir/url';
 
-CREATE FUNCTION equals(url, url) RETURNS bool
+CREATE FUNCTION equals(url1 url, url2 url) RETURNS bool
     IMMUTABLE
     STRICT
-    LANGUAGE C
-AS
-'$libdir/url';
+    LANGUAGE sql
+as 'SELECT geturl(url1) = geturl(url2)';
 
+CREATE FUNCTION sameFile(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getfile(url1) = getfile(url2)';
+
+
+CREATE FUNCTION sameHost(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getauthority(url1) = getauthority(url2)';
 
 CREATE FUNCTION urlne(url, url) RETURNS bool
     IMMUTABLE

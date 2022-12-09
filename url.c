@@ -57,8 +57,8 @@ Datum url_out(PG_FUNCTION_ARGS) {
 PG_FUNCTION_INFO_V1(geturl);
 Datum
 geturl(PG_FUNCTION_ARGS) {
-    URL *url = urlFromStringReverse(PG_GETARG_CSTRING(0));
-    return (Datum) getUrl(url);
+    URL const *url = (URL *) PG_GETARG_POINTER(0);
+    return getRawUrlFromUrl(url);
 }
 
 PG_FUNCTION_INFO_V1(getauthority);

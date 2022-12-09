@@ -2,7 +2,6 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <utils/builtins.h>
-//#include <libpq-fe.h>
 
 
 typedef struct URL {
@@ -20,22 +19,16 @@ typedef struct URL {
     char url[];
 } URL;
 
-struct protocol_handler{
-    const char *protocol1;
-    const char *protocol2;
-    const char *protocol3;
-    const char *protocol4;
-} list = {"http","https","file","jar"};
 
 Datum mallocAndMakeSlice(const char *start, int length) {
     PG_RETURN_TEXT_P(cstring_to_text_with_len(start, length));
 }
-Datum mallocAndMakeSliceToInt(const char *start, int length){
-    char *str = NULL;
-    str[0] = start;
-    str[length+1] = '\0';
-    PG_RETURN_INT64(atoi((const char *) str));
-}
+//Datum mallocAndMakeSliceToInt(const char *start, int length){
+//    char *str = NULL;
+//    str[0] = start;
+//    str[length+1] = '\0';
+//    PG_RETURN_INT64(atoi((const char *) str));
+//}
 
 Datum getHostFromUrl(const URL *url) {
     return mallocAndMakeSlice(url->url + url->scheme + url->user, url->host);
@@ -365,51 +358,6 @@ URL *urlFromStringWithContext(const URL *context, const char *source) {
 
 URL *urlFromProtocolHostPortFile(const char *protocol,const char *host, int port, const char *file) {
     char *finalUrlString;
-//
-//    PGconn *conn;
-//    PGresult *res;
-//    // check the database if the protocol exist
-//    conn = PQconnectdb("dbname=postgres host=localhost user=postgres password=postgres");
-//    char request[100];
-//    sprintf(request,"SELECT COUNT(*) FROM table_with_url WHERE (getprotocol(my_url) = '%s')", protocol);
-//    res= PQexec(conn, request);
-//
-//    if(PQntuples(res) > 0){
-//        if (port < 0 ){
-//            finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+ sizeof(file));
-//            sprintf(finalUrlString, "%s://%s%s", protocol,host,file);
-//        }
-//        else{
-//            finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+1+ sizeof(port)+ sizeof(file));
-//            sprintf(finalUrlString, "%s://%s:%d%s", protocol,host,port,file);
-//        }
-//    }
-//    else
-//    {
-//        int already_exist= 0;
-//        if (protocol == list.protocol1 ||protocol == list.protocol2 ||
-//        protocol == list.protocol3 ||protocol == list.protocol4){
-//            already_exist= 1;
-//        }
-//        if (already_exist){
-//            if (port < 0 ){
-//                finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+ sizeof(file));
-//                sprintf(finalUrlString, "%s://%s%s", protocol,host,file);
-//            }
-//            else{
-//                finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+1+ sizeof(port)+ sizeof(file));
-//                sprintf(finalUrlString, "%s://%s:%d%s", protocol,host,port,file);
-//            }
-//        } else {
-//            ereport(ERROR,
-//                    (
-//                            errmsg("Invalid protocol format."),
-//                            errdetail("The '%s' protocol isn't allowed", protocol),
-//                            errhint("Make sure you are entering a protocol like: http, https, file, and jar.")
-//                    )
-//                    );
-//        }
-//    }
     if (port < 0 ){
         finalUrlString = malloc(sizeof(protocol)+3+ sizeof(host)+ sizeof(file));
         sprintf(finalUrlString, "%s://%s%s", protocol,host,file);
