@@ -1,11 +1,31 @@
--- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION url" to load this file. \quit
 
 
 CREATE FUNCTION url_in(cstring)
     RETURNS url
 AS
-'$libdir/url'
+'$libdir/url', 'url_in_1_arg'
+    LANGUAGE C IMMUTABLE
+               STRICT;
+
+CREATE FUNCTION url_in(url, cstring)
+    RETURNS url
+AS
+'$libdir/url', 'url_in_2_arg'
+    LANGUAGE C IMMUTABLE
+               STRICT;
+
+CREATE FUNCTION url_in(cstring, cstring, cstring)
+    RETURNS url
+AS
+'$libdir/url', 'url_in_3_arg'
+    LANGUAGE C IMMUTABLE
+               STRICT;
+
+CREATE FUNCTION url_in(cstring, cstring, int, cstring)
+    RETURNS url
+AS
+'$libdir/url', 'url_in_4_arg'
     LANGUAGE C IMMUTABLE
                STRICT;
 
@@ -23,6 +43,12 @@ CREATE TYPE url
     INTERNALLENGTH = VARIABLE
 );
 
+CREATE FUNCTION getUrl(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS
+'$libdir/url';
 
 CREATE FUNCTION getAuthority(url) RETURNS text
     IMMUTABLE
@@ -30,8 +56,22 @@ CREATE FUNCTION getAuthority(url) RETURNS text
     LANGUAGE C
 AS
 '$libdir/url';
+CREATE FUNCTION getDefaultPort(url) RETURNS int8
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS
+'$libdir/url';
 
-CREATE FUNCTION getUsername(url) RETURNS text
+
+CREATE FUNCTION getFile(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS
+'$libdir/url';
+
+CREATE FUNCTION getUserinfo(url) RETURNS text
     IMMUTABLE
     STRICT
     LANGUAGE C
@@ -52,7 +92,14 @@ CREATE FUNCTION getRef(url) RETURNS text
 AS
 '$libdir/url';
 
-CREATE FUNCTION getPort(url) RETURNS text
+CREATE FUNCTION getProtocol(url) RETURNS text
+    IMMUTABLE
+    STRICT
+    LANGUAGE C
+AS
+'$libdir/url';
+
+CREATE FUNCTION getPort(url) RETURNS int8
     IMMUTABLE
     STRICT
     LANGUAGE C
@@ -73,26 +120,41 @@ CREATE FUNCTION getScheme(url) RETURNS text
 AS
 '$libdir/url';
 
-CREATE FUNCTION getFile(url) RETURNS text
-    IMMUTABLE
-    STRICT
-    LANGUAGE C
-AS
-'$libdir/url';
-
-CREATE FUNCTION getUrl(url) RETURNS text
-    IMMUTABLE
-    STRICT
-    LANGUAGE C
-AS
-'$libdir/url';
-
-
 CREATE FUNCTION equals(url1 url, url2 url) RETURNS bool
     IMMUTABLE
     STRICT
     LANGUAGE sql
 as 'SELECT geturl(url1) = geturl(url2)';
+
+CREATE FUNCTION sameProtocol(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getprotocol(url1) = getprotocol(url2)';
+
+CREATE FUNCTION sameUser(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getUserinfo(url1) = getUserinfo(url2)';
+
+CREATE FUNCTION sameHost(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getauthority(url1) = getauthority(url2)';
+
+CREATE FUNCTION samePort(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getPort(url1) = getPort(url2)';
+
+CREATE FUNCTION samePath(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getpath(url1) = getpath(url2)';
 
 CREATE FUNCTION sameFile(url1 url, url2 url) RETURNS bool
     IMMUTABLE
@@ -100,13 +162,17 @@ CREATE FUNCTION sameFile(url1 url, url2 url) RETURNS bool
     LANGUAGE sql
 as 'SELECT getfile(url1) = getfile(url2)';
 
-
-CREATE FUNCTION sameHost(url1 url, url2 url) RETURNS bool
+CREATE FUNCTION samQuery(url1 url, url2 url) RETURNS bool
     IMMUTABLE
     STRICT
     LANGUAGE sql
-    as 'SELECT getauthority(url1) = getauthority(url2)';
+as 'SELECT getquery(url1) = getquery(url2)';
 
+CREATE FUNCTION sameRef(url1 url, url2 url) RETURNS bool
+    IMMUTABLE
+    STRICT
+    LANGUAGE sql
+as 'SELECT getref(url1) = getref(url2)';
 
 CREATE FUNCTION urlne(url, url) RETURNS bool
     IMMUTABLE
@@ -220,7 +286,4 @@ CREATE OPERATOR CLASS url_ops
     OPERATOR 3 = ,
     OPERATOR 4 >= ,
     OPERATOR 5 > ,
-    FUNCTION 1 cmpUrls(url, url)
-;
-
-
+    FUNCTION 1 cmpUrls(url, url);
